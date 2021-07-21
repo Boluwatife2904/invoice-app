@@ -1,6 +1,44 @@
 <template>
-  <router-view />
+  <div>
+    <div class="app flex flex-column" v-if="!onMobile">
+      <Navigation />
+      <div class="app-content flex">
+        <router-view />
+      </div>
+    </div>
+    <div class="mobile-message flex flex-column" v-else>
+      <h2>Sorry, but viewing on Mobile Devices is currently not supported.</h2>
+      <p>To use this app, you might need to log on with your computer or tablet</p>
+    </div>
+  </div>
 </template>
+
+<script>
+import Navigation from "./components/Navigation.vue";
+export default {
+  components: { Navigation },
+  data() {
+    return {
+      onMobile: null
+    }
+  },
+  methods: {
+    checkScreenSize() {
+      if (window.innerWidth <= 750) {
+        this.onMobile = true;
+        return;
+      }
+      this.onMobile = false;
+    },
+  },
+  created() {
+    this.checkScreenSize();
+    window.addEventListener("resize", () => {
+      this.checkScreenSize();
+    })
+  }
+};
+</script>
 
 <style lang="scss">
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
@@ -10,7 +48,35 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
+}
+
+.app {
+  background: #141625;
+  min-height: 100vh;
+
+  @media (min-width: 900px) {
+    flex-direction: row !important;
+  }
+
+  .app-content {
+    padding: 0 20px;
+    flex: 1;
+    position: relative;
+  }
+}
+
+.mobile-message {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100vh;
   background-color: #141625;
+  color: #fff;
+  padding: 20px;
+
+  p {
+    margin-top: 16px;
+  }
 }
 
 button,
