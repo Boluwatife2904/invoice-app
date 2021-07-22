@@ -2,25 +2,30 @@
   <div>
     <div class="app flex flex-column" v-if="!onMobile">
       <Navigation />
-      <div class="app-content flex">
+      <div class="app-content flex flex-column">
+        <InvoiceModal />
         <router-view />
       </div>
     </div>
     <div class="mobile-message flex flex-column" v-else>
       <h2>Sorry, but viewing on Mobile Devices is currently not supported.</h2>
-      <p>To use this app, you might need to log on with your computer or tablet</p>
+      <p>
+        To use this app, you might need to log on with your computer or tablet
+      </p>
     </div>
   </div>
 </template>
 
 <script>
 import Navigation from "./components/Navigation.vue";
+import InvoiceModal from "./components/InvoiceModal.vue";
+
 export default {
-  components: { Navigation },
+  components: { Navigation, InvoiceModal },
   data() {
     return {
-      onMobile: null
-    }
+      onMobile: null,
+    };
   },
   methods: {
     checkScreenSize() {
@@ -35,8 +40,8 @@ export default {
     this.checkScreenSize();
     window.addEventListener("resize", () => {
       this.checkScreenSize();
-    })
-  }
+    });
+  },
 };
 </script>
 
