@@ -3,7 +3,9 @@
     <div class="app flex flex-column" v-if="!onMobile">
       <Navigation />
       <div class="app-content flex flex-column">
-        <InvoiceModal />
+        <transition name="slide" mode="out-in">
+          <InvoiceModal v-if="showInvoiceModal"
+        /></transition>
         <router-view />
       </div>
     </div>
@@ -17,6 +19,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import Navigation from "./components/Navigation.vue";
 import InvoiceModal from "./components/InvoiceModal.vue";
 
@@ -41,6 +44,9 @@ export default {
     window.addEventListener("resize", () => {
       this.checkScreenSize();
     });
+  },
+  computed: {
+    ...mapGetters(["showInvoiceModal"]),
   },
 };
 </script>
@@ -180,5 +186,22 @@ button,
   }
   color: #dfe3fa;
   background-color: rgba(223, 227, 250, 0.1);
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  // transform: translateX(-100%);
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.8s ease;
+}
+
+.slide-enter-to,
+.slide-leave-from {
+  // transform: translateX(0);
+  opacity: 1;
 }
 </style>

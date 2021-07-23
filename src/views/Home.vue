@@ -41,7 +41,7 @@ export default {
       this.filterMenu = !this.filterMenu;
     },
     createNewInvoice() {
-      console.log("Creating new inovice");
+      this.$store.dispatch("toggleInvoiceModal");
     }
   },
 };
