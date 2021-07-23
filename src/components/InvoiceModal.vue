@@ -141,8 +141,11 @@
             id="paymentTerms"
             v-model.trim="paymentTerms"
           >
-            <option value="30">Net 30 days</option>
-            <option value="60">Net 60 days</option>
+            <option value="3">3 days</option>
+            <option value="7">7 days</option>
+            <option value="14">14 days</option>
+            <option value="30">30 days</option>
+            <option value="60">60 days</option>
           </select>
         </div>
         <div class="input flex flex-column">
@@ -168,15 +171,15 @@
           </tr>
           <tr
             class="table-item flex"
-            v-for="(item, index) in invoiceItemList"
-            :key="index"
+            v-for="item in invoiceItemList"
+            :key="item.id"
           >
             <td class="name"><input type="text" v-model="item.name" /></td>
-            <td class="qty"><input type="text" v-model="item.qty" /></td>
-            <td class="price"><input type="text" v-model="item.price" /></td>
+            <td class="qty"><input type="number" v-model.number="item.qty" /></td>
+            <td class="price"><input type="number" v-model.number="item.price" /></td>
             <td class="total">${{ (item.total = item.qty * item.price) }}</td>
             <img
-              @click="deleteInvoice(item.id)"
+              @click="deleteInvoiceItem(item.id)"
               src="@/assets/icon-delete.svg"
               alt="delete-icon"
             />
@@ -204,6 +207,7 @@
 </template>
 
 <script>
+import { uid } from "uid"
 export default {
   name: "InvoiceModal",
   data() {
@@ -230,18 +234,49 @@ export default {
       invoiceTotal: 0,
     };
   },
+  created() {
+    this.invoiceDateUnix = Date.now();
+    this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleDateString(
+      "en-us",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }
+    );
+  },
   methods: {
     addNewInvoiceItem() {
       this.invoiceItemList.push({
-        name: null,
+        id: uid(),
+        name: "",
         qty: null,
         price: null,
-        total: 0,
+        total: null,
       });
+    },
+    deleteInvoiceItem(id) {
+      this.invoiceItemList = this.invoiceItemList.filter(item => item.id !== id)
     },
     closeInvoice() {
       this.$store.dispatch("toggleInvoiceModal");
-    }
+    },
+  },
+  watch: {
+    paymentTerms() {
+      const futureDate = new Date();
+      this.paymentDueDateUnix = futureDate.setDate(
+        futureDate.getDate() + parseInt(this.paymentTerms)
+      );
+      this.paymentDueDate = new Date(this.paymentDueDateUnix).toLocaleString(
+        "en-us",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }
+      );
+    },
   },
 };
 </script>
@@ -363,6 +398,7 @@ export default {
             right: 0;
             width: 12px;
             height: 16px;
+            cursor: pointer;
           }
         }
       }
@@ -376,6 +412,7 @@ export default {
 
         img {
           margin-right: 4px;
+          height: 12px;
         }
       }
     }
@@ -417,5 +454,17 @@ export default {
       outline: none;
     }
   }
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }
 </style>
