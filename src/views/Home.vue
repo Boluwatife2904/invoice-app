@@ -25,25 +25,42 @@
         </div>
       </div>
     </div>
+    <!-- LIST OF ITEMS -->
+    <div v-if="isLoading">
+      loading..........
+    </div>
+    <div class="list" v-else>
+      {{ listOfInvoices }}
+    </div>
   </div>
 </template>
 
 <script>
+import { mapActions, mapGetters } from "vuex";
 export default {
   name: "Home",
   data() {
     return {
+      isLoading: true,
       filterMenu: false,
     };
   },
   methods: {
+    ...mapActions(["toggleInvoiceModal", "fetchInvoicesFromServer"]),
     toggleFilterMenu() {
       this.filterMenu = !this.filterMenu;
     },
     createNewInvoice() {
-      this.$store.dispatch("toggleInvoiceModal");
+      this.toggleInvoiceModal();
     }
   },
+  async created() {
+    await this.fetchInvoicesFromServer();
+    this.isLoading = false;
+  },
+  computed: {
+    ...mapGetters(["listOfInvoices"])
+  }
 };
 </script>
 
