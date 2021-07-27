@@ -1,10 +1,11 @@
 <template>
   <div
     class="invoice-wrapper flex flex-column"
-    @click="checkClick"
+    @click.self="closeInvoice"
     ref="invoice-wrapper"
   >
-    <form @submit.prevent="createInvoice" class="invoice-content">
+    <form @submit.prevent="submitForm" class="invoice-content">
+      <Loading v-show="isLoading" />
       <h1>New Invoice</h1>
       <!-- Bill from -->
       <div class="bill-from flex flex-column">
@@ -16,6 +17,7 @@
             name="billerStreetAddress"
             id="billerStreetAddress"
             v-model.trim="billerStreetAddress"
+            required
           />
         </div>
         <div class="location-details flex">
@@ -26,6 +28,7 @@
               name="billerCity"
               id="billerCity"
               v-model.trim="billerCity"
+              required
             />
           </div>
           <div class="input flex flex-column">
@@ -35,6 +38,7 @@
               name="billerZipCode"
               id="billerZipCode"
               v-model.trim="billerZipCode"
+              required
             />
           </div>
           <div class="input flex flex-column">
@@ -44,6 +48,7 @@
               name="billerCountry"
               id="billerCountry"
               v-model.trim="billerCountry"
+              required
             />
           </div>
         </div>
@@ -59,6 +64,7 @@
             name="clientName"
             id="clientName"
             v-model.trim="clientName"
+            required
           />
         </div>
         <div class="input flex flex-column">
@@ -68,6 +74,7 @@
             name="clientEmail"
             id="clientEmail"
             v-model.trim="clientEmail"
+            required
           />
         </div>
         <div class="input flex flex-column">
@@ -77,6 +84,7 @@
             name="clientStreetAddress"
             id="clientStreetAddress"
             v-model.trim="clientStreetAddress"
+            required
           />
         </div>
         <div class="location-details flex">
@@ -87,6 +95,7 @@
               name="clientCity"
               id="clientCity"
               v-model.trim="clientCity"
+              required
             />
           </div>
           <div class="input flex flex-column">
@@ -96,6 +105,7 @@
               name="clientZipCode"
               id="clientZipCode"
               v-model.trim="clientZipCode"
+              required
             />
           </div>
           <div class="input flex flex-column">
@@ -105,6 +115,7 @@
               name="clientCountry"
               id="clientCountry"
               v-model.trim="clientCountry"
+              required
             />
           </div>
         </div>
@@ -155,6 +166,7 @@
             name="productDescription"
             id="productDescription"
             v-model.trim="productDescription"
+            required
           />
         </div>
       </div>
@@ -175,8 +187,12 @@
             :key="item.id"
           >
             <td class="name"><input type="text" v-model="item.name" /></td>
-            <td class="qty"><input type="number" v-model.number="item.qty" /></td>
-            <td class="price"><input type="number" v-model.number="item.price" /></td>
+            <td class="qty">
+              <input type="number" v-model.number="item.qty" />
+            </td>
+            <td class="price">
+              <input type="number" v-model.number="item.price" />
+            </td>
             <td class="total">${{ (item.total = item.qty * item.price) }}</td>
             <img
               @click="deleteInvoiceItem(item.id)"
@@ -194,12 +210,12 @@
       <!-- Actions -->
       <div class="actions flex">
         <div class="left">
-          <button class="red" @click="closeInvoice">Cancel</button>
+          <button type="button" class="red" @click="closeInvoice">Cancel</button>
         </div>
 
         <div class="right flex">
-          <button class="dark-purple" @click="saveAsDraft">Save Draft</button>
-          <button class="purple" @click="publishInvoice">Create Invoice</button>
+          <button type="submit" class="dark-purple" @click="saveAsDraft">Save Draft</button>
+          <button type="submit" class="purple" @click="publishInvoice">Create Invoice</button>
         </div>
       </div>
     </form>
@@ -207,11 +223,15 @@
 </template>
 
 <script>
-import { uid } from "uid"
+import { projectFirestore } from "@/firebase/config";
+import { uid } from "uid";
+import Loading from "./Loading.vue";
 export default {
+  components: { Loading },
   name: "InvoiceModal",
   data() {
     return {
+      isLoading: false,
       billerStreetAddress: null,
       billerCity: null,
       billerZipCode: null,
@@ -250,16 +270,70 @@ export default {
       this.invoiceItemList.push({
         id: uid(),
         name: "",
-        qty: null,
-        price: null,
-        total: null,
+        qty: "",
+        price: 0,
+        total: 0,
       });
     },
     deleteInvoiceItem(id) {
-      this.invoiceItemList = this.invoiceItemList.filter(item => item.id !== id)
+      this.invoiceItemList = this.invoiceItemList.filter(
+        (item) => item.id !== id
+      );
     },
     closeInvoice() {
+      this.$store.dispatch("toggleLeaveModal");
+    },
+    calculateInvoiceTotal() {
+      this.invoiceTotal = 0;
+      this.invoiceItemList.forEach((item) => {
+        this.invoiceTotal += item.total;
+      });
+    },
+    publishInvoice() {
+      this.invoicePending = true;
+    },
+    saveAsDraft() {
+      this.invoiceDraft = true;
+    },
+    async uploadInvoice() {
+      if (this.invoiceItemList.length <= 0) {
+        alert("You have not added any item!");
+        return;
+      }
+      this.isLoading = true;
+      this.calculateInvoiceTotal();
+
+      const dataBase = projectFirestore.collection("invoices").doc();
+
+      await dataBase.set({
+        invoiceId: uid(6),
+        billerStreetAddress: this.billerStreetAddress,
+        billerCity: this.billerCity,
+        billerZipCode: this.billerZipCode,
+        billerCountry: this.billerCountry,
+        clientName: this.clientName,
+        clientEmail: this.clientEmail,
+        clientStreetAddress: this.clientStreetAddress,
+        clientCity: this.clientCity,
+        clientZipCode: this.clientZipCode,
+        clientCountry: this.clientCountry,
+        invoiceDate: this.invoiceDate,
+        invoiceDateUnix: this.invoiceDateUnix,
+        paymentTerms: this.paymentTerms,
+        paymentDueDate: this.paymentDueDate,
+        paymentDueDateUnix: this.paymentDueDateUnix,
+        productDescription: this.productDescription,
+        invoiceItemList: this.invoiceItemList,
+        invoiceTotal: this.invoiceTotal,
+        invoicePending: this.invoicePending,
+        invoiceDraft: this.invoiceDraft,
+        invoicePaid: null,
+      });
+      this.isLoading = false;
       this.$store.dispatch("toggleInvoiceModal");
+    },
+    submitForm() {
+      this.uploadInvoice();
     },
   },
   watch: {
@@ -454,6 +528,10 @@ export default {
       outline: none;
     }
   }
+
+  select {
+    cursor: pointer;
+  }
 }
 
 /* Chrome, Safari, Edge, Opera */
@@ -464,7 +542,7 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 </style>

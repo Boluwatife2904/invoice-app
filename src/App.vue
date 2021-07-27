@@ -3,6 +3,7 @@
     <div class="app flex flex-column" v-if="!onMobile">
       <Navigation />
       <div class="app-content flex flex-column">
+        <Modal v-if="showLeaveModal" />
         <transition name="slide" mode="out-in">
           <InvoiceModal v-if="showInvoiceModal"
         /></transition>
@@ -22,9 +23,10 @@
 import { mapGetters } from "vuex";
 import Navigation from "./components/Navigation.vue";
 import InvoiceModal from "./components/InvoiceModal.vue";
+import Modal from './components/Modal.vue';
 
 export default {
-  components: { Navigation, InvoiceModal },
+  components: { Navigation, InvoiceModal, Modal },
   data() {
     return {
       onMobile: null,
@@ -46,7 +48,7 @@ export default {
     });
   },
   computed: {
-    ...mapGetters(["showInvoiceModal"]),
+    ...mapGetters(["showInvoiceModal", "showLeaveModal"]),
   },
 };
 </script>
