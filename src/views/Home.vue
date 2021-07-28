@@ -25,19 +25,28 @@
         </div>
       </div>
     </div>
-    <!-- LIST OF ITEMS -->
+    <!-- LOADIING -->
     <div v-if="isLoading">
       loading..........
     </div>
-    <div class="list" v-else>
-      {{ listOfInvoices }}
+    <!-- LIST OF ITEMS -->
+    <div class="list" v-else-if="!isLoading && listOfInvoices.length > 0">
+      <Invoice v-for="invoice in listOfInvoices" :key="invoice.invoiceId" :invoice="invoice" />
+    </div>
+    <!-- EMPTY STATE -->
+    <div class="empty flex flex-column" v-else>
+      <img src="@/assets/illustration-empty.svg" alt="empty">
+      <h3>Nothing to see here!</h3>
+      <p>Create a new invoice by clicking the New Invoice button to get started.</p>
     </div>
   </div>
 </template>
 
 <script>
 import { mapActions, mapGetters } from "vuex";
+import Invoice from '../components/Invoice.vue';
 export default {
+  components: { Invoice },
   name: "Home",
   data() {
     return {
@@ -142,6 +151,28 @@ export default {
           }
         }
       }
+    }
+  }
+
+  .empty {
+    align-items: center;
+
+    img {
+      height: 200px;
+      width: 214px;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-top: 40px;
+    }
+
+    p {
+      text-align: center;
+      max-width: 320px;
+      font-size: 16px;
+      font-weight: 300;
+      margin-top: 16px;
     }
   }
 }
