@@ -1,9 +1,4 @@
 <template>
-  <!-- <div class="invoice">
-    <div class="invoice-info">
-      <h1>{{ invoice.docId }}</h1>
-    </div>
-  </div> -->
   <router-link
     class="invoice flex"
     :to="{ name: 'Invoice', params: { invoiceId: invoice.invoiceId } }"
