@@ -64,7 +64,7 @@
         </div>
       </div>
       <!-- MIDDLE OF INVOICE -->
-      <div class="middle flex flex-column">
+      <div class="middle flex">
         <div class="payment flex flex-column">
           <h4>Invoice Date</h4>
           <p>
@@ -128,7 +128,7 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 export default {
   name: "Invoice",
   props: ["invoiceId"],
@@ -137,10 +137,12 @@ export default {
       currentInvoice: null,
     };
   },
-  created() {
+  async created() {
+    await this.fetchInvoicesFromServer();
     this.setActiveInvoice(this.invoiceId);
   },
   methods: {
+    ...mapActions(["fetchInvoicesFromServer"]),
     setActiveInvoice(invoiceId) {
       this.currentInvoice = this.listOfInvoices.find(
         (invoice) => invoice.invoiceId === invoiceId
@@ -224,6 +226,120 @@ export default {
 
         span {
           color: #888eb0;
+        }
+      }
+
+      .right {
+        font-size: 12px;
+        align-items: flex-end;
+      }
+    }
+
+    .middle {
+      margin-top: 50px;
+      color: #dfe3fa;
+      gap: 16px;
+
+      h4 {
+        font-size: 12px;
+        font-weight: 400;
+        margin-bottom: 12px;
+      }
+
+      .bill,
+      .payment {
+        flex: 1;
+      }
+
+      .payment {
+        h4:nth-child(3) {
+          margin-top: 32px;
+        }
+
+        p {
+          font-weight: 600;
+        }
+      }
+
+      .bill {
+        p {
+          font-size: 12px;
+
+          &:nth-child(2) {
+            font-size: 16px;
+          }
+
+          &:nth-child(3) {
+            margin-top: auto;
+          }
+        }
+      }
+
+      .send-to {
+        flex: 2;
+      }
+    }
+
+    .bottom {
+      margin-top: 50px;
+
+      .billing-items {
+        padding: 32px;
+        border-radius: 20px 20px 0 0;
+        background-color: #252945;
+
+        .heading {
+          color: #dfe3fa;
+          font-size: 12px;
+          margin-bottom: 32px;
+
+          p {
+            flex: 1;
+            text-align: right;
+
+            &:first-child {
+              flex: 3;
+              text-align: left;
+            }
+          }
+        }
+
+        .item {
+          color: #fff;
+          margin-bottom: 32px;
+          font-size: 13px;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          p {
+            flex: 1;
+            text-align: right;
+
+            &:first-child {
+              flex: 3;
+              text-align: left;
+            }
+          }
+        }
+      }
+
+      .total {
+        color: #fff;
+        padding: 32px;
+        background: rgba(12,14, 22, 0.7);
+        align-items: center;
+        border-radius: 0 0 20px 20px;
+
+        p {
+          flex: 1;
+          font-size: 12px;
+
+          &:nth-child(2) {
+            font-size: 28px;
+            text-align: right;
+          }
         }
       }
     }
