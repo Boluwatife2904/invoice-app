@@ -6,7 +6,8 @@
   >
     <form @submit.prevent="submitForm" class="invoice-content">
       <Loading v-show="isLoading" />
-      <h1>New Invoice</h1>
+      <h1 v-if="!showEditModal">New Invoice</h1>
+      <h1 v-else>Edit Invoice</h1>
       <!-- Bill from -->
       <div class="bill-from flex flex-column">
         <h4>Bill from</h4>
@@ -210,12 +211,31 @@
       <!-- Actions -->
       <div class="actions flex">
         <div class="left">
-          <button type="button" class="red" @click="closeInvoice">Cancel</button>
+          <button type="button" class="red" @click="closeInvoice">
+            Cancel
+          </button>
         </div>
 
         <div class="right flex">
-          <button type="submit" class="dark-purple" @click="saveAsDraft">Save Draft</button>
-          <button type="submit" class="purple" @click="publishInvoice">Create Invoice</button>
+          <button
+            v-if="!showEditModal"
+            type="submit"
+            class="dark-purple"
+            @click="saveAsDraft"
+          >
+            Save Draft
+          </button>
+          <button
+            v-if="!showEditModal"
+            type="submit"
+            class="purple"
+            @click="publishInvoice"
+          >
+            Create Invoice
+          </button>
+          <button v-if="showEditModal" type="submit" class="purple">
+            Update Invoice
+          </button>
         </div>
       </div>
     </form>
@@ -226,6 +246,7 @@
 import { projectFirestore } from "@/firebase/config";
 import { uid } from "uid";
 import Loading from "./Loading.vue";
+import { mapActions, mapGetters } from "vuex";
 export default {
   components: { Loading },
   name: "InvoiceModal",
@@ -255,17 +276,20 @@ export default {
     };
   },
   created() {
-    this.invoiceDateUnix = Date.now();
-    this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleDateString(
-      "en-us",
-      {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }
-    );
+    if (!this.showEditModal) {
+      this.invoiceDateUnix = Date.now();
+      this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleDateString(
+        "en-us",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }
+      );
+    }
   },
   methods: {
+    ...mapActions(["toggleEditModal"]),
     addNewInvoiceItem() {
       this.invoiceItemList.push({
         id: uid(),
@@ -282,6 +306,9 @@ export default {
     },
     closeInvoice() {
       this.$store.dispatch("toggleLeaveModal");
+      if (this.showEditModal) {
+        this.toggleEditModal();
+      }
     },
     calculateInvoiceTotal() {
       this.invoiceTotal = 0;
@@ -352,6 +379,9 @@ export default {
       );
     },
   },
+  computed: {
+    ...mapGetters(["showEditModal", "singleInvoice"]),
+  },
 };
 </script>
 
@@ -363,7 +393,8 @@ export default {
   left: 0;
   width: 100%;
   height: 100vh;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
   z-index: 11;
 
   &::-webkit-scrollbar {

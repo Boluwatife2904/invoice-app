@@ -1,5 +1,5 @@
 <template>
-  <div class="invoice-view container" v-if="currentInvoice">
+  <div class="invoice-view container" v-if="singleInvoice">
     <router-link class="nav-link flex" :to="{ name: 'Home' }">
       <img src="@/assets/icon-arrow-left.svg" alt="arrow-left" />
       Go back
@@ -11,37 +11,32 @@
         <div
           class="flex status-button"
           :class="{
-            paid: currentInvoice.invoicePaid,
-            draft: currentInvoice.invoiceDraft,
-            pending: currentInvoice.invoicePending,
+            paid: singleInvoice.invoicePaid,
+            draft: singleInvoice.invoiceDraft,
+            pending: singleInvoice.invoicePending,
           }"
         >
-          <span v-if="currentInvoice.invoicePaid">Paid</span>
-          <span v-if="currentInvoice.invoicePending">Pending</span>
-          <span v-if="currentInvoice.invoiceDraft">Draft</span>
+          <span v-if="singleInvoice.invoicePaid">Paid</span>
+          <span v-if="singleInvoice.invoicePending">Pending</span>
+          <span v-if="singleInvoice.invoiceDraft">Draft</span>
         </div>
       </div>
       <div class="right flex">
-        <button
-          @click="toggleEditInvoice(currentInvoice.docId)"
-          class="dark-purple"
-        >
-          Edit
-        </button>
-        <button @click="deleteInvoice(currentInvoice.docId)" class="red">
+        <button @click="toggleEditInvoice" class="dark-purple">Edit</button>
+        <button @click="deleteInvoice(singleInvoice.docId)" class="red">
           Delete
         </button>
         <button
-          @click="updateStatusToPaid(currentInvoice.docId)"
+          @click="updateStatusToPaid(singleInvoice.docId)"
           class="green"
-          v-if="currentInvoice.invoicePending"
+          v-if="singleInvoice.invoicePending"
         >
           Mark as Paid
         </button>
         <button
-          @click="updateStatusToPending(currentInvoice.docId)"
+          @click="updateStatusToPending(singleInvoice.docId)"
           class="orange"
-          v-if="currentInvoice.invoiceDraft || currentInvoice.invoicePaid"
+          v-if="singleInvoice.invoiceDraft || singleInvoice.invoicePaid"
         >
           Mark as Pending
         </button>
@@ -53,14 +48,15 @@
       <!-- TOP OF INVOICE -->
       <div class="top flex">
         <div class="left flex flex-column">
-          <p><span>#</span> {{ currentInvoice.invoiceId }}</p>
-          <p>{{ currentInvoice.productDescription }}</p>
+          <p><span>#</span> {{ singleInvoice.invoiceId }}</p>
+          <p>{{ singleInvoice.productDescription }}</p>
+          <p>{{ showEditModal }}</p>
         </div>
         <div class="right flex flex-column">
-          <p>{{ currentInvoice.billerStreetAddress }}</p>
-          <p>{{ currentInvoice.billerCity }}</p>
-          <p>{{ currentInvoice.billerZipCode }}</p>
-          <p>{{ currentInvoice.billerCountry }}</p>
+          <p>{{ singleInvoice.billerStreetAddress }}</p>
+          <p>{{ singleInvoice.billerCity }}</p>
+          <p>{{ singleInvoice.billerZipCode }}</p>
+          <p>{{ singleInvoice.billerCountry }}</p>
         </div>
       </div>
       <!-- MIDDLE OF INVOICE -->
@@ -68,34 +64,34 @@
         <div class="payment flex flex-column">
           <h4>Invoice Date</h4>
           <p>
-            {{ currentInvoice.invoiceDate }}
+            {{ singleInvoice.invoiceDate }}
           </p>
           <h4>Payment Date</h4>
           <p>
-            {{ currentInvoice.paymentDueDate }}
+            {{ singleInvoice.paymentDueDate }}
           </p>
         </div>
         <div class="bill flex flex-column">
           <h4>Bill To</h4>
           <p>
-            {{ currentInvoice.clientName }}
+            {{ singleInvoice.clientName }}
           </p>
           <p>
-            {{ currentInvoice.clientStreetAddress }}
+            {{ singleInvoice.clientStreetAddress }}
           </p>
           <p>
-            {{ currentInvoice.clientCity }}
+            {{ singleInvoice.clientCity }}
           </p>
           <p>
-            {{ currentInvoice.clientZipCode }}
+            {{ singleInvoice.clientZipCode }}
           </p>
           <p>
-            {{ currentInvoice.clientCountry }}
+            {{ singleInvoice.clientCountry }}
           </p>
         </div>
         <div class="send-to flex flex-column">
           <h4>Sent to</h4>
-          <p>{{ currentInvoice.clientEmail }}</p>
+          <p>{{ singleInvoice.clientEmail }}</p>
         </div>
       </div>
       <!-- BOTTOM OF INVOICE -->
@@ -109,7 +105,7 @@
           </div>
           <div
             class="item flex"
-            v-for="(item, index) in currentInvoice.invoiceItemList"
+            v-for="(item, index) in singleInvoice.invoiceItemList"
             :key="index"
           >
             <p>{{ item.name }}</p>
@@ -120,7 +116,7 @@
         </div>
         <div class="total flex">
           <p>Amount Due</p>
-          <p>{{ currentInvoice.invoiceTotal }}</p>
+          <p>{{ singleInvoice.invoiceTotal }}</p>
         </div>
       </div>
     </div>
@@ -132,25 +128,26 @@ import { mapGetters, mapActions } from "vuex";
 export default {
   name: "Invoice",
   props: ["invoiceId"],
-  data() {
-    return {
-      currentInvoice: null,
-    };
-  },
   async created() {
-    await this.fetchInvoicesFromServer();
-    this.setActiveInvoice(this.invoiceId);
+    if (this.listOfInvoices.length === 0) {
+      await this.fetchInvoicesFromServer();
+    }
+    this.findSingleInvoice(this.invoiceId);
   },
   methods: {
-    ...mapActions(["fetchInvoicesFromServer"]),
-    setActiveInvoice(invoiceId) {
-      this.currentInvoice = this.listOfInvoices.find(
-        (invoice) => invoice.invoiceId === invoiceId
-      );
+    ...mapActions([
+      "fetchInvoicesFromServer",
+      "toggleEditModal",
+      "toggleInvoiceModal",
+      "findSingleInvoice",
+    ]),
+    toggleEditInvoice() {
+      this.toggleEditModal();
+      this.toggleInvoiceModal();
     },
   },
   computed: {
-    ...mapGetters(["listOfInvoices"]),
+    ...mapGetters(["listOfInvoices", "singleInvoice", "showEditModal"]),
   },
 };
 </script>
@@ -328,7 +325,7 @@ export default {
       .total {
         color: #fff;
         padding: 32px;
-        background: rgba(12,14, 22, 0.7);
+        background: rgba(12, 14, 22, 0.7);
         align-items: center;
         border-radius: 0 0 20px 20px;
 

@@ -4,8 +4,10 @@ import { projectFirestore } from "../firebase/config";
 export default createStore({
   state: {
     listOfInvoices: [],
+    singleInvoice: null,
     showInvoiceModal: false,
     showLeaveModal: false,
+    showEditModal: false
   },
   mutations: {
     toggleInvoiceModal(state) {
@@ -17,6 +19,12 @@ export default createStore({
     addInvoiceToList(state, payload) {
       state.listOfInvoices.push(payload);
     },
+    toggleEditModal(state) {
+      state.showEditModal = !state.showEditModal;
+    },
+    setSingleInvoice(state, payload) {
+      state.singleInvoice = payload
+    }
   },
   actions: {
     toggleInvoiceModal(context) {
@@ -24,6 +32,9 @@ export default createStore({
     },
     toggleLeaveModal(context) {
       context.commit("toggleLeaveModal");
+    },
+    toggleEditModal(context) {
+      context.commit("toggleEditModal")
     },
     async fetchInvoicesFromServer({ commit, state }) {
       const database = projectFirestore.collection("invoices");
@@ -35,11 +46,19 @@ export default createStore({
         }
       });
     },
+    findSingleInvoice({commit, state}, payload) {
+      const invoice = state.listOfInvoices.find(
+        (invoice) => invoice.invoiceId === payload
+      );
+      commit("setSingleInvoice", invoice)
+    }
   },
   modules: {},
   getters: {
     listOfInvoices: (state) => state.listOfInvoices,
+    singleInvoice: (state) => state.singleInvoice,
     showInvoiceModal: (state) => state.showInvoiceModal,
     showLeaveModal: (state) => state.showLeaveModal,
+    showEditModal: (state) => state.showEditModal
   },
 });

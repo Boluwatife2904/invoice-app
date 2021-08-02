@@ -11,20 +11,30 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 export default {
   name: "Modal",
   methods: {
-    ...mapActions(["toggleLeaveModal", "toggleInvoiceModal"]),
+    ...mapActions([
+      "toggleLeaveModal",
+      "toggleInvoiceModal",
+      "toggleEditModal",
+    ]),
     closeModal() {
       this.toggleLeaveModal();
     },
     closeInvoice() {
       this.toggleLeaveModal();
       this.toggleInvoiceModal();
-    }
-  }
-}
+      if (this.showEditModal) {
+        this.toggleEditModal();
+      }
+    },
+  },
+  computed: {
+    ...mapGetters(["showEditModal"]),
+  },
+};
 </script>
 
 <style lang="scss" scoped>

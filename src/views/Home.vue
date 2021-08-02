@@ -26,25 +26,29 @@
       </div>
     </div>
     <!-- LOADIING -->
-    <div v-if="isLoading">
-      loading..........
-    </div>
+    <div v-if="isLoading">loading..........</div>
     <!-- LIST OF ITEMS -->
     <div class="list" v-else-if="!isLoading && listOfInvoices.length > 0">
-      <Invoice v-for="invoice in listOfInvoices" :key="invoice.invoiceId" :invoice="invoice" />
+      <Invoice
+        v-for="invoice in listOfInvoices"
+        :key="invoice.invoiceId"
+        :invoice="invoice"
+      />
     </div>
     <!-- EMPTY STATE -->
     <div class="empty flex flex-column" v-else>
-      <img src="@/assets/illustration-empty.svg" alt="empty">
+      <img src="@/assets/illustration-empty.svg" alt="empty" />
       <h3>Nothing to see here!</h3>
-      <p>Create a new invoice by clicking the New Invoice button to get started.</p>
+      <p>
+        Create a new invoice by clicking the New Invoice button to get started.
+      </p>
     </div>
   </div>
 </template>
 
 <script>
 import { mapActions, mapGetters } from "vuex";
-import Invoice from '../components/Invoice.vue';
+import Invoice from "../components/Invoice.vue";
 export default {
   components: { Invoice },
   name: "Home",
@@ -61,15 +65,17 @@ export default {
     },
     createNewInvoice() {
       this.toggleInvoiceModal();
-    }
+    },
   },
   async created() {
-    await this.fetchInvoicesFromServer();
+    if (this.listOfInvoices.length === 0) {
+      await this.fetchInvoicesFromServer();
+    }
     this.isLoading = false;
   },
   computed: {
-    ...mapGetters(["listOfInvoices"])
-  }
+    ...mapGetters(["listOfInvoices"]),
+  },
 };
 </script>
 
@@ -102,7 +108,6 @@ export default {
         position: relative;
         cursor: pointer;
         margin-right: 40px;
-
 
         img {
           margin-left: 12px;
