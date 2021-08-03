@@ -624,6 +624,10 @@ export default {
     &:focus {
       outline: none;
     }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
   }
 
   select {

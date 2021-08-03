@@ -23,9 +23,7 @@
       </div>
       <div class="right flex">
         <button @click="toggleEditInvoice" class="dark-purple">Edit</button>
-        <button @click="deleteInvoice(currentInvoice.docId)" class="red">
-          Delete
-        </button>
+        <button @click="openDeleteModal = true" class="red">Delete</button>
         <button
           @click="updateStatusToPaid(currentInvoice.docId)"
           class="green"
@@ -119,6 +117,24 @@
         </div>
       </div>
     </div>
+
+    <!-- CONFIRMATION BEFORE DELETING -->
+    <div class="modal flex" v-if="openDeleteModal">
+      <div class="modal-content">
+        <p>
+          Are you sure you want to delete this invoice? You will no longer be
+          able to view, or edit this invoice!
+        </p>
+        <div class="actions flex">
+          <button @click="openDeleteModal = false" class="purple">
+            Cancel
+          </button>
+          <button @click="deleteInvoice(currentInvoice.docId)" class="red">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -136,8 +152,9 @@ export default {
   },
   data() {
     return {
+      openDeleteModal: false,
       currentInvoice: null,
-    }
+    };
   },
   methods: {
     ...mapActions([
@@ -153,19 +170,19 @@ export default {
     async deleteInvoice(id) {
       await this.$store.dispatch("deleteInvoice", id);
       await this.fetchInvoicesFromServer();
-      this.$router.push("/")
-    }
+      this.$router.push("/");
+    },
   },
   computed: {
     ...mapGetters(["listOfInvoices", "singleInvoice", "showEditModal"]),
   },
   watch: {
     showEditModal() {
-      if(!this.showEditModal) {
+      if (!this.showEditModal) {
         this.currentInvoice = JSON.parse(JSON.stringify(this.singleInvoice));
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -355,6 +372,38 @@ export default {
             text-align: right;
           }
         }
+      }
+    }
+  }
+}
+
+.modal {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+
+  .modal-content {
+    border-radius: 20px;
+    padding: 48px 32px;
+    max-width: 450px;
+    color: #fff;
+    background: #252945;
+
+    p {
+      text-align: center;
+    }
+
+    .actions {
+      margin-top: 50px;
+
+      button {
+        flex: 1;
       }
     }
   }
