@@ -6,8 +6,8 @@
   >
     <form @submit.prevent="submitForm" class="invoice-content">
       <Loading v-show="isLoading" />
-      <h1 v-if="!showEditModal">New Invoice</h1>
-      <h1 v-else>Edit Invoice</h1>
+      <h1 v-if="showEditModal">Edit Invoice</h1>
+      <h1 v-else>Create New Invoice</h1>
       <!-- Bill from -->
       <div class="bill-from flex flex-column">
         <h4>Bill from</h4>
@@ -253,6 +253,7 @@ export default {
   data() {
     return {
       isLoading: false,
+      currentInvoice: null,
       docId: null,
       billerStreetAddress: null,
       billerCity: null,
@@ -289,28 +290,28 @@ export default {
       );
     }
     if (this.showEditModal) {
-      const currentInvoice = this.singleInvoice;
-      this.docId = currentInvoice.docId;
-      this.billerStreetAddress = currentInvoice.billerStreetAddress;
-      this.billerCity = currentInvoice.billerCity;
-      this.billerZipCode = currentInvoice.billerZipCode;
-      this.billerCountry = currentInvoice.billerCountry;
-      this.clientName = currentInvoice.clientName;
-      this.clientEmail = currentInvoice.clientEmail;
-      this.clientStreetAddress = currentInvoice.clientStreetAddress;
-      this.clientCity = currentInvoice.clientCity;
-      this.clientZipCode = currentInvoice.clientZipCode;
-      this.clientCountry = currentInvoice.clientCountry;
-      this.invoiceDateUnix = currentInvoice.invoiceDateUnix;
-      this.invoiceDate = currentInvoice.invoiceDate;
-      this.paymentTerms = currentInvoice.paymentTerms;
-      this.paymentDueDateUnix = currentInvoice.paymentDueDateUnix;
-      this.paymentDueDate = currentInvoice.paymentDueDate;
-      this.productDescription = currentInvoice.productDescription;
-      this.invoicePending = currentInvoice.invoicePending;
-      this.invoiceDraft = currentInvoice.invoiceDraft;
-      this.invoiceItemList = currentInvoice.invoiceItemList;
-      this.invoiceTotal = currentInvoice.invoiceTotal;
+      this.currentInvoice = JSON.parse(JSON.stringify(this.singleInvoice));
+      this.docId = this.currentInvoice.docId;
+      this.billerStreetAddress = this.currentInvoice.billerStreetAddress;
+      this.billerCity = this.currentInvoice.billerCity;
+      this.billerZipCode = this.currentInvoice.billerZipCode;
+      this.billerCountry = this.currentInvoice.billerCountry;
+      this.clientName = this.currentInvoice.clientName;
+      this.clientEmail = this.currentInvoice.clientEmail;
+      this.clientStreetAddress = this.currentInvoice.clientStreetAddress;
+      this.clientCity = this.currentInvoice.clientCity;
+      this.clientZipCode = this.currentInvoice.clientZipCode;
+      this.clientCountry = this.currentInvoice.clientCountry;
+      this.invoiceDateUnix = this.currentInvoice.invoiceDateUnix;
+      this.invoiceDate = this.currentInvoice.invoiceDate;
+      this.paymentTerms = this.currentInvoice.paymentTerms;
+      this.paymentDueDateUnix = this.currentInvoice.paymentDueDateUnix;
+      this.paymentDueDate = this.currentInvoice.paymentDueDate;
+      this.productDescription = this.currentInvoice.productDescription;
+      this.invoicePending = this.currentInvoice.invoicePending;
+      this.invoiceDraft = this.currentInvoice.invoiceDraft;
+      this.invoiceItemList = this.currentInvoice.invoiceItemList;
+      this.invoiceTotal = this.currentInvoice.invoiceTotal;
     }
   },
   methods: {
@@ -331,9 +332,9 @@ export default {
     },
     closeInvoice() {
       this.$store.dispatch("toggleLeaveModal");
-      if (this.showEditModal) {
-        this.toggleEditModal();
-      }
+      // if (this.showEditModal) {
+      //   this.toggleEditModal();
+      // }
     },
     calculateInvoiceTotal() {
       this.invoiceTotal = 0;
@@ -389,8 +390,8 @@ export default {
         alert("You have not added any item!");
         return;
       }
-      this.isLoading = true;
       this.calculateInvoiceTotal();
+      this.isLoading = true;
 
       const dataBase = projectFirestore.collection("invoices").doc(this.docId);
 
@@ -412,8 +413,13 @@ export default {
         invoiceItemList: this.invoiceItemList,
         invoiceTotal: this.invoiceTotal,
       });
+
+      let data = {
+        docId: this.docId,
+        invoiceId: this.$route.params.invoiceId
+      }
+      this.$store.dispatch("updateInvoice", data)
       this.isLoading = false;
-      this.toggleInvoiceModal();
     },
     submitForm() {
       if(this.showEditModal) {

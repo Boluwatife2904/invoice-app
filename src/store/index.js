@@ -49,18 +49,23 @@ export default createStore({
         }
       });
     },
+    async deleteInvoice({commit}, payload) {
+      const database = projectFirestore.collection("invoices").doc(payload);
+      await database.delete()
+      commit("deleteInvoice", payload)
+    },
     findSingleInvoice({commit, state}, payload) {
       const invoice = state.listOfInvoices.find(
         (invoice) => invoice.invoiceId === payload
       );
       commit("setSingleInvoice", invoice)
     },
-    async updateInvoice({commit, dispatch }, { docId, routeId}) {
+    async updateInvoice({commit, dispatch }, { docId, invoiceId}) {
       commit("deleteInvoice", docId);
       await dispatch("fetchInvoicesFromServer");
-      commit("toggleInvoiceModal");
-      commit("toggleEditModal"),
-      dispatch("setSingleInvoice", routeId)
+      dispatch("toggleInvoiceModal");
+      dispatch("toggleEditModal");
+      dispatch("findSingleInvoice", invoiceId)
     }
   },
   modules: {},

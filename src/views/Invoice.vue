@@ -1,5 +1,5 @@
 <template>
-  <div class="invoice-view container" v-if="singleInvoice">
+  <div class="invoice-view container" v-if="currentInvoice">
     <router-link class="nav-link flex" :to="{ name: 'Home' }">
       <img src="@/assets/icon-arrow-left.svg" alt="arrow-left" />
       Go back
@@ -11,32 +11,32 @@
         <div
           class="flex status-button"
           :class="{
-            paid: singleInvoice.invoicePaid,
-            draft: singleInvoice.invoiceDraft,
-            pending: singleInvoice.invoicePending,
+            paid: currentInvoice.invoicePaid,
+            draft: currentInvoice.invoiceDraft,
+            pending: currentInvoice.invoicePending,
           }"
         >
-          <span v-if="singleInvoice.invoicePaid">Paid</span>
-          <span v-if="singleInvoice.invoicePending">Pending</span>
-          <span v-if="singleInvoice.invoiceDraft">Draft</span>
+          <span v-if="currentInvoice.invoicePaid">Paid</span>
+          <span v-if="currentInvoice.invoicePending">Pending</span>
+          <span v-if="currentInvoice.invoiceDraft">Draft</span>
         </div>
       </div>
       <div class="right flex">
         <button @click="toggleEditInvoice" class="dark-purple">Edit</button>
-        <button @click="deleteInvoice(singleInvoice.docId)" class="red">
+        <button @click="deleteInvoice(currentInvoice.docId)" class="red">
           Delete
         </button>
         <button
-          @click="updateStatusToPaid(singleInvoice.docId)"
+          @click="updateStatusToPaid(currentInvoice.docId)"
           class="green"
-          v-if="singleInvoice.invoicePending"
+          v-if="currentInvoice.invoicePending"
         >
           Mark as Paid
         </button>
         <button
-          @click="updateStatusToPending(singleInvoice.docId)"
+          @click="updateStatusToPending(currentInvoice.docId)"
           class="orange"
-          v-if="singleInvoice.invoiceDraft || singleInvoice.invoicePaid"
+          v-if="currentInvoice.invoiceDraft || currentInvoice.invoicePaid"
         >
           Mark as Pending
         </button>
@@ -48,14 +48,14 @@
       <!-- TOP OF INVOICE -->
       <div class="top flex">
         <div class="left flex flex-column">
-          <p><span>#</span> {{ singleInvoice.invoiceId }}</p>
-          <p>{{ singleInvoice.productDescription }}</p>
+          <p><span>#</span> {{ currentInvoice.invoiceId }}</p>
+          <p>{{ currentInvoice.productDescription }}</p>
         </div>
         <div class="right flex flex-column">
-          <p>{{ singleInvoice.billerStreetAddress }}</p>
-          <p>{{ singleInvoice.billerCity }}</p>
-          <p>{{ singleInvoice.billerZipCode }}</p>
-          <p>{{ singleInvoice.billerCountry }}</p>
+          <p>{{ currentInvoice.billerStreetAddress }}</p>
+          <p>{{ currentInvoice.billerCity }}</p>
+          <p>{{ currentInvoice.billerZipCode }}</p>
+          <p>{{ currentInvoice.billerCountry }}</p>
         </div>
       </div>
       <!-- MIDDLE OF INVOICE -->
@@ -63,34 +63,34 @@
         <div class="payment flex flex-column">
           <h4>Invoice Date</h4>
           <p>
-            {{ singleInvoice.invoiceDate }}
+            {{ currentInvoice.invoiceDate }}
           </p>
           <h4>Payment Date</h4>
           <p>
-            {{ singleInvoice.paymentDueDate }}
+            {{ currentInvoice.paymentDueDate }}
           </p>
         </div>
         <div class="bill flex flex-column">
           <h4>Bill To</h4>
           <p>
-            {{ singleInvoice.clientName }}
+            {{ currentInvoice.clientName }}
           </p>
           <p>
-            {{ singleInvoice.clientStreetAddress }}
+            {{ currentInvoice.clientStreetAddress }}
           </p>
           <p>
-            {{ singleInvoice.clientCity }}
+            {{ currentInvoice.clientCity }}
           </p>
           <p>
-            {{ singleInvoice.clientZipCode }}
+            {{ currentInvoice.clientZipCode }}
           </p>
           <p>
-            {{ singleInvoice.clientCountry }}
+            {{ currentInvoice.clientCountry }}
           </p>
         </div>
         <div class="send-to flex flex-column">
           <h4>Sent to</h4>
-          <p>{{ singleInvoice.clientEmail }}</p>
+          <p>{{ currentInvoice.clientEmail }}</p>
         </div>
       </div>
       <!-- BOTTOM OF INVOICE -->
@@ -104,7 +104,7 @@
           </div>
           <div
             class="item flex"
-            v-for="(item, index) in singleInvoice.invoiceItemList"
+            v-for="(item, index) in currentInvoice.invoiceItemList"
             :key="index"
           >
             <p>{{ item.name }}</p>
@@ -115,7 +115,7 @@
         </div>
         <div class="total flex">
           <p>Amount Due</p>
-          <p>{{ singleInvoice.invoiceTotal }}</p>
+          <p>{{ currentInvoice.invoiceTotal }}</p>
         </div>
       </div>
     </div>
@@ -132,6 +132,12 @@ export default {
       await this.fetchInvoicesFromServer();
     }
     this.findSingleInvoice(this.invoiceId);
+    this.currentInvoice = this.singleInvoice;
+  },
+  data() {
+    return {
+      currentInvoice: null,
+    }
   },
   methods: {
     ...mapActions([
@@ -144,10 +150,22 @@ export default {
       this.toggleEditModal();
       this.toggleInvoiceModal();
     },
+    async deleteInvoice(id) {
+      await this.$store.dispatch("deleteInvoice", id);
+      await this.fetchInvoicesFromServer();
+      this.$router.push("/")
+    }
   },
   computed: {
     ...mapGetters(["listOfInvoices", "singleInvoice", "showEditModal"]),
   },
+  watch: {
+    showEditModal() {
+      if(!this.showEditModal) {
+        this.currentInvoice = JSON.parse(JSON.stringify(this.singleInvoice));
+      }
+    }
+  }
 };
 </script>
 

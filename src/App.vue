@@ -192,8 +192,8 @@ button,
 
 .slide-enter-from,
 .slide-leave-to {
-  // transform: translateX(-100%);
-  opacity: 0;
+  transform: translateX(-700px);
+  // opacity: 0;
 }
 
 .slide-enter-active,
@@ -203,7 +203,7 @@ button,
 
 .slide-enter-to,
 .slide-leave-from {
-  // transform: translateX(0);
-  opacity: 1;
+  transform: translateX(0);
+  // opacity: 1;
 }
 </style>
