@@ -8,13 +8,13 @@
       </div>
       <div class="right flex">
         <div @click="toggleFilterMenu" class="filter flex">
-          <span>Filter by status</span>
+          <span>Filter by status <span v-if="selectedFilter">: {{ selectedFilter }}</span> </span>
           <img src="@/assets/icon-arrow-down.svg" alt="arrow-down" />
           <ul class="filter-menu" v-show="filterMenu">
-            <li>Draft</li>
-            <li>Pending</li>
-            <li>Paid</li>
-            <li>Clear Filter</li>
+            <li @click="filterInvoices('Draft')">Draft</li>
+            <li @click="filterInvoices('Pending')">Pending</li>
+            <li @click="filterInvoices('Paid')">Paid</li>
+            <li @click="filterInvoices('clear')">Clear Filter</li>
           </ul>
         </div>
         <div @click="createNewInvoice" class="button flex">
@@ -30,7 +30,7 @@
     <!-- LIST OF ITEMS -->
     <div class="list" v-else-if="!isLoading && listOfInvoices.length > 0">
       <Invoice
-        v-for="invoice in listOfInvoices"
+        v-for="invoice in filteredInvoices"
         :key="invoice.invoiceId"
         :invoice="invoice"
       />
@@ -56,6 +56,7 @@ export default {
     return {
       isLoading: true,
       filterMenu: false,
+      selectedFilter: null,
     };
   },
   methods: {
@@ -66,6 +67,13 @@ export default {
     createNewInvoice() {
       this.toggleInvoiceModal();
     },
+    filterInvoices(type) {
+      if(type === "clear") {
+        this.selectedFilter = null;
+        return
+      }
+      this.selectedFilter = type;
+    },
   },
   async created() {
     if (this.listOfInvoices.length === 0) {
@@ -75,6 +83,19 @@ export default {
   },
   computed: {
     ...mapGetters(["listOfInvoices"]),
+    filteredInvoices() {
+      const list = this.listOfInvoices;
+      if (this.selectedFilter === "Pending") {
+        return list.filter((invoice) => invoice.invoicePending === true);
+      }
+      if (this.selectedFilter === "Paid") {
+        return list.filter((invoice) => invoice.invoicePaid === true);
+      }
+      if (this.selectedFilter === "Draft") {
+        return list.filter((invoice) => invoice.invoiceDraft === true);
+      }
+      return list;
+    },
   },
 };
 </script>
