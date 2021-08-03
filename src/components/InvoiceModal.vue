@@ -253,6 +253,7 @@ export default {
   data() {
     return {
       isLoading: false,
+      docId: null,
       billerStreetAddress: null,
       billerCity: null,
       billerZipCode: null,
@@ -287,9 +288,33 @@ export default {
         }
       );
     }
+    if (this.showEditModal) {
+      const currentInvoice = this.singleInvoice;
+      this.docId = currentInvoice.docId;
+      this.billerStreetAddress = currentInvoice.billerStreetAddress;
+      this.billerCity = currentInvoice.billerCity;
+      this.billerZipCode = currentInvoice.billerZipCode;
+      this.billerCountry = currentInvoice.billerCountry;
+      this.clientName = currentInvoice.clientName;
+      this.clientEmail = currentInvoice.clientEmail;
+      this.clientStreetAddress = currentInvoice.clientStreetAddress;
+      this.clientCity = currentInvoice.clientCity;
+      this.clientZipCode = currentInvoice.clientZipCode;
+      this.clientCountry = currentInvoice.clientCountry;
+      this.invoiceDateUnix = currentInvoice.invoiceDateUnix;
+      this.invoiceDate = currentInvoice.invoiceDate;
+      this.paymentTerms = currentInvoice.paymentTerms;
+      this.paymentDueDateUnix = currentInvoice.paymentDueDateUnix;
+      this.paymentDueDate = currentInvoice.paymentDueDate;
+      this.productDescription = currentInvoice.productDescription;
+      this.invoicePending = currentInvoice.invoicePending;
+      this.invoiceDraft = currentInvoice.invoiceDraft;
+      this.invoiceItemList = currentInvoice.invoiceItemList;
+      this.invoiceTotal = currentInvoice.invoiceTotal;
+    }
   },
   methods: {
-    ...mapActions(["toggleEditModal"]),
+    ...mapActions(["toggleEditModal", "updateInvoice", "toggleInvoiceModal"]),
     addNewInvoiceItem() {
       this.invoiceItemList.push({
         id: uid(),
@@ -359,7 +384,42 @@ export default {
       this.isLoading = false;
       this.$store.dispatch("toggleInvoiceModal");
     },
+    async updateInvoice() {
+      if (this.invoiceItemList.length <= 0) {
+        alert("You have not added any item!");
+        return;
+      }
+      this.isLoading = true;
+      this.calculateInvoiceTotal();
+
+      const dataBase = projectFirestore.collection("invoices").doc(this.docId);
+
+      await dataBase.update({
+        billerStreetAddress: this.billerStreetAddress,
+        billerCity: this.billerCity,
+        billerZipCode: this.billerZipCode,
+        billerCountry: this.billerCountry,
+        clientName: this.clientName,
+        clientEmail: this.clientEmail,
+        clientStreetAddress: this.clientStreetAddress,
+        clientCity: this.clientCity,
+        clientZipCode: this.clientZipCode,
+        clientCountry: this.clientCountry,
+        paymentTerms: this.paymentTerms,
+        paymentDueDate: this.paymentDueDate,
+        paymentDueDateUnix: this.paymentDueDateUnix,
+        productDescription: this.productDescription,
+        invoiceItemList: this.invoiceItemList,
+        invoiceTotal: this.invoiceTotal,
+      });
+      this.isLoading = false;
+      this.toggleInvoiceModal();
+    },
     submitForm() {
+      if(this.showEditModal) {
+        this.updateInvoice();
+        return;
+      }
       this.uploadInvoice();
     },
   },

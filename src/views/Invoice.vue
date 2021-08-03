@@ -50,7 +50,6 @@
         <div class="left flex flex-column">
           <p><span>#</span> {{ singleInvoice.invoiceId }}</p>
           <p>{{ singleInvoice.productDescription }}</p>
-          <p>{{ showEditModal }}</p>
         </div>
         <div class="right flex flex-column">
           <p>{{ singleInvoice.billerStreetAddress }}</p>

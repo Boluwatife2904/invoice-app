@@ -24,6 +24,9 @@ export default createStore({
     },
     setSingleInvoice(state, payload) {
       state.singleInvoice = payload
+    },
+    deleteInvoice(state, payload) {
+      state.listOfInvoices = state.listOfInvoices.filter((invoice) => invoice.docId !== payload)
     }
   },
   actions: {
@@ -51,6 +54,13 @@ export default createStore({
         (invoice) => invoice.invoiceId === payload
       );
       commit("setSingleInvoice", invoice)
+    },
+    async updateInvoice({commit, dispatch }, { docId, routeId}) {
+      commit("deleteInvoice", docId);
+      await dispatch("fetchInvoicesFromServer");
+      commit("toggleInvoiceModal");
+      commit("toggleEditModal"),
+      dispatch("setSingleInvoice", routeId)
     }
   },
   modules: {},
