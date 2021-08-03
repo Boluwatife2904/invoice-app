@@ -162,6 +162,8 @@ export default {
       "toggleEditModal",
       "toggleInvoiceModal",
       "findSingleInvoice",
+      "updateStatusToPaid",
+      "updateStatusToPending"
     ]),
     toggleEditInvoice() {
       this.toggleEditModal();

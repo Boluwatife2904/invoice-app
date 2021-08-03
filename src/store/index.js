@@ -7,7 +7,7 @@ export default createStore({
     singleInvoice: null,
     showInvoiceModal: false,
     showLeaveModal: false,
-    showEditModal: false
+    showEditModal: false,
   },
   mutations: {
     toggleInvoiceModal(state) {
@@ -23,11 +23,30 @@ export default createStore({
       state.showEditModal = !state.showEditModal;
     },
     setSingleInvoice(state, payload) {
-      state.singleInvoice = payload
+      state.singleInvoice = payload;
     },
     deleteInvoice(state, payload) {
-      state.listOfInvoices = state.listOfInvoices.filter((invoice) => invoice.docId !== payload)
-    }
+      state.listOfInvoices = state.listOfInvoices.filter(
+        (invoice) => invoice.docId !== payload
+      );
+    },
+    updateStatusToPaid(state, payload) {
+      state.listOfInvoices.forEach((invoice) => {
+        if (invoice.docId === payload) {
+          invoice.invoicePaid = true;
+          invoice.invoicePending = false;
+        }
+      });
+    },
+    updateStatusToPending(state, payload) {
+      state.listOfInvoices.forEach((invoice) => {
+        if (invoice.docId === payload) {
+          invoice.invoicePaid = false;
+          invoice.invoicePending = true;
+          invoice.invoiceDraft = false;
+        }
+      });
+    },
   },
   actions: {
     toggleInvoiceModal(context) {
@@ -37,7 +56,7 @@ export default createStore({
       context.commit("toggleLeaveModal");
     },
     toggleEditModal(context) {
-      context.commit("toggleEditModal")
+      context.commit("toggleEditModal");
     },
     async fetchInvoicesFromServer({ commit, state }) {
       const database = projectFirestore.collection("invoices");
@@ -49,23 +68,40 @@ export default createStore({
         }
       });
     },
-    async deleteInvoice({commit}, payload) {
+    async deleteInvoice({ commit }, payload) {
       const database = projectFirestore.collection("invoices").doc(payload);
-      await database.delete()
-      commit("deleteInvoice", payload)
+      await database.delete();
+      commit("deleteInvoice", payload);
     },
-    findSingleInvoice({commit, state}, payload) {
+    findSingleInvoice({ commit, state }, payload) {
       const invoice = state.listOfInvoices.find(
         (invoice) => invoice.invoiceId === payload
       );
-      commit("setSingleInvoice", invoice)
+      commit("setSingleInvoice", invoice);
     },
-    async updateInvoice({commit, dispatch }, { docId, invoiceId}) {
+    async updateInvoice({ commit, dispatch }, { docId, invoiceId }) {
       commit("deleteInvoice", docId);
       await dispatch("fetchInvoicesFromServer");
       dispatch("toggleInvoiceModal");
       dispatch("toggleEditModal");
-      dispatch("findSingleInvoice", invoiceId)
+      dispatch("findSingleInvoice", invoiceId);
+    },
+    async updateStatusToPaid({ commit }, payload) {
+      const database = projectFirestore.collection("invoices").doc(payload);
+      await database.update({
+        invoicePaid: true,
+        invoicePending: false
+      })
+      commit("updateStatusToPaid", payload)
+    },
+    async updateStatusToPending({ commit }, payload) {
+      const database = projectFirestore.collection("invoices").doc(payload);
+      await database.update({
+        invoicePaid: false,
+        invoicePending: true,
+        invoiceDraft: false
+      })
+      commit("updateStatusToPending", payload)
     }
   },
   modules: {},
@@ -74,6 +110,6 @@ export default createStore({
     singleInvoice: (state) => state.singleInvoice,
     showInvoiceModal: (state) => state.showInvoiceModal,
     showLeaveModal: (state) => state.showLeaveModal,
-    showEditModal: (state) => state.showEditModal
+    showEditModal: (state) => state.showEditModal,
   },
 });

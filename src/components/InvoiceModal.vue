@@ -315,7 +315,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["toggleEditModal", "updateInvoice", "toggleInvoiceModal"]),
+    ...mapActions(["toggleEditModal", "updateInvoice", "toggleInvoiceModal", "fetchInvoicesFromServer"]),
     addNewInvoiceItem() {
       this.invoiceItemList.push({
         id: uid(),
@@ -382,6 +382,7 @@ export default {
         invoiceDraft: this.invoiceDraft,
         invoicePaid: null,
       });
+      await this.fetchInvoicesFromServer();
       this.isLoading = false;
       this.$store.dispatch("toggleInvoiceModal");
     },
