@@ -194,7 +194,7 @@
             <td class="price">
               <input type="number" v-model.number="item.price" />
             </td>
-            <td class="total">${{ (item.total = item.qty * item.price) }}</td>
+            <td class="total">&#8358; {{ (item.total = item.qty * item.price) }}</td>
             <img
               @click="deleteInvoiceItem(item.id)"
               src="@/assets/icon-delete.svg"

@@ -108,12 +108,12 @@
             <p>{{ item.name }}</p>
             <p>{{ item.qty }}</p>
             <p>{{ item.price }}</p>
-            <p>{{ item.total }}</p>
+            <p>&#8358; {{ item.total }}</p>
           </div>
         </div>
         <div class="total flex">
           <p>Amount Due</p>
-          <p>{{ currentInvoice.invoiceTotal }}</p>
+          <p>&#8358; {{ numberWithCommas(currentInvoice.invoiceTotal)  }}</p>
         </div>
       </div>
     </div>
@@ -163,7 +163,7 @@ export default {
       "toggleInvoiceModal",
       "findSingleInvoice",
       "updateStatusToPaid",
-      "updateStatusToPending"
+      "updateStatusToPending",
     ]),
     toggleEditInvoice() {
       this.toggleEditModal();
@@ -173,6 +173,9 @@ export default {
       await this.$store.dispatch("deleteInvoice", id);
       await this.fetchInvoicesFromServer();
       this.$router.push("/");
+    },
+    numberWithCommas(number) {
+      return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
   },
   computed: {
@@ -384,7 +387,7 @@ export default {
   z-index: 100;
   top: 0;
   left: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   justify-content: center;
   align-items: center;
   height: 100vh;
