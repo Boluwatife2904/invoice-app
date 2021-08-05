@@ -50,9 +50,11 @@
           <p>{{ currentInvoice.productDescription }}</p>
         </div>
         <div class="right flex flex-column">
+          <p>{{ currentInvoice.billerName }}</p>
+          <p>{{ currentInvoice.billerEmail }}</p>
           <p>{{ currentInvoice.billerStreetAddress }}</p>
-          <p>{{ currentInvoice.billerCity }}</p>
-          <p>{{ currentInvoice.billerZipCode }}</p>
+          <!-- <p>{{ currentInvoice.billerCity }}</p> -->
+          <!-- <p>{{ currentInvoice.billerZipCode }}</p> -->
           <p>{{ currentInvoice.billerCountry }}</p>
         </div>
       </div>

@@ -12,6 +12,26 @@
       <div class="bill-from flex flex-column">
         <h4>Bill from</h4>
         <div class="input flex flex-column">
+          <label for="billerName">Biller's Name</label>
+          <input
+            type="text"
+            name="billerName"
+            id="billerName"
+            v-model.trim="billerName"
+            required
+          />
+        </div>
+        <div class="input flex flex-column">
+          <label for="billerEmail">Biller's Email</label>
+          <input
+            type="text"
+            name="billerEmail"
+            id="billerEmail"
+            v-model.trim="billerEmail"
+            required
+          />
+        </div>
+        <div class="input flex flex-column">
           <label for="billerStreetAddress">Street Address</label>
           <input
             type="text"
@@ -255,6 +275,8 @@ export default {
       isLoading: false,
       currentInvoice: null,
       docId: null,
+      billerName: null,
+      billerEmail: null,
       billerStreetAddress: null,
       billerCity: null,
       billerZipCode: null,
@@ -292,6 +314,8 @@ export default {
     if (this.showEditModal) {
       this.currentInvoice = JSON.parse(JSON.stringify(this.singleInvoice));
       this.docId = this.currentInvoice.docId;
+      this.billerName = this.currentInvoice.billerName;
+      this.billerEmail = this.currentInvoice.billerEmail;
       this.billerStreetAddress = this.currentInvoice.billerStreetAddress;
       this.billerCity = this.currentInvoice.billerCity;
       this.billerZipCode = this.currentInvoice.billerZipCode;
@@ -360,6 +384,8 @@ export default {
 
       await dataBase.set({
         invoiceId: uid(6),
+        billerName: this.billerName,
+        billerEmail: this.billerEmail,
         billerStreetAddress: this.billerStreetAddress,
         billerCity: this.billerCity,
         billerZipCode: this.billerZipCode,
@@ -397,6 +423,8 @@ export default {
       const dataBase = projectFirestore.collection("invoices").doc(this.docId);
 
       await dataBase.update({
+        billerName: this.billerName,
+        billerEmail: this.billerEmail,
         billerStreetAddress: this.billerStreetAddress,
         billerCity: this.billerCity,
         billerZipCode: this.billerZipCode,
